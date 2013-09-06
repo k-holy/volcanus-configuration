@@ -207,6 +207,24 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	}
 
 	/**
+	 * 配列に変換して返します。
+	 *
+	 * @return array
+	 */
+	public function toArray()
+	{
+		$values = array();
+		foreach ($this->attributes as $name => $value) {
+			if ($value instanceof self) {
+				$values[$name] = $value->toArray();
+			} else {
+				$values[$name] = $value;
+			}
+		}
+		return $values;
+	}
+
+	/**
 	 * 属性値を配列から再帰的にセットします。
 	 * 要素が配列またはTraversable実装オブジェクトの場合、
 	 * ラッピングすることで配列アクセスとプロパティアクセスを提供します。

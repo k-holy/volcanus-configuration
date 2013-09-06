@@ -374,4 +374,29 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 		$this->assertCount(2, $config);
 	}
 
+	public function testToArray()
+	{
+		$callable = function() {
+			return 'Im Closure';
+		};
+		$config = new Configuration(array(
+			'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
+			'object' => new \ArrayObject(array(
+				'a' => new \ArrayObject(array(
+					'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
+					'callable' => $callable,
+				)),
+			)),
+		), Configuration::EXECUTE_CALLABLE);
+		$this->assertEquals(array(
+			'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
+			'object' => array(
+				'a' => array(
+					'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
+					'callable' => $callable,
+				),
+			),
+		), $config->toArray());
+	}
+
 }
