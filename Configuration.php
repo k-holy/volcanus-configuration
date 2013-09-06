@@ -183,7 +183,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function __toString()
 	{
-		return var_export(iterator_to_array($this->getIterator()), true);
+		return var_export($this->toArray(), true);
 	}
 
 	/**
@@ -215,11 +215,10 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	{
 		$values = array();
 		foreach ($this->attributes as $name => $value) {
-			if ($value instanceof self) {
-				$values[$name] = $value->toArray();
-			} else {
-				$values[$name] = $value;
-			}
+			$value = $this->offsetGet($name);
+			$values[$name] = ($value instanceof self)
+				? $value->toArray()
+				: $value;
 		}
 		return $values;
 	}

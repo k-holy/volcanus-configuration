@@ -376,15 +376,14 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 
 	public function testToArray()
 	{
-		$callable = function() {
-			return 'Im Closure';
-		};
 		$config = new Configuration(array(
 			'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
 			'object' => new \ArrayObject(array(
 				'a' => new \ArrayObject(array(
 					'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
-					'callable' => $callable,
+					'callable' => function() {
+						return 'Im Closure';
+					},
 				)),
 			)),
 		), Configuration::EXECUTE_CALLABLE);
@@ -393,7 +392,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 			'object' => array(
 				'a' => array(
 					'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
-					'callable' => $callable,
+					'callable' => 'Im Closure',
 				),
 			),
 		), $config->toArray());
