@@ -1,10 +1,12 @@
-#Volcanus_Configuration
-
-
-##使い方
-
-```php
 <?php
+/**
+ * Volcanus libraries for PHP
+ *
+ * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
+ * @license The MIT License (MIT)
+ */
+require_once __DIR__ . '/../bootstrap.php';
+
 use Volcanus\Configuration\Configuration;
 
 assert_options(ASSERT_ACTIVE, 1);
@@ -15,7 +17,6 @@ assert_options(ASSERT_CALLBACK, function ($file, $line) {
 
 
 $config = new Configuration();
-
 
 echo '<p>define()メソッドで項目を定義</p>';
 $config->define('foo');
@@ -138,7 +139,6 @@ assert(is_array($array['array']));
 assert(is_array($array['object']));
 assert(is_array($array['object']['a']));
 
-
 echo '<p>JSON文字列から生成</p>';
 $config = Configuration::createFromJson(<<<'JSON'
 {
@@ -161,4 +161,5 @@ assert('C' === $config['arr'][2]);
 assert('A' === $config['dict']['a']);
 assert('B' === $config['dict']['b']);
 assert('C' === $config['dict']['c']);
-```
+
+highlight_file(__FILE__);

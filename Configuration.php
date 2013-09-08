@@ -61,6 +61,35 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	}
 
 	/**
+	 * JSON文字列を元にオブジェクトを生成して返します。
+	 *
+	 * @param string JSON文字列
+	 * @param int 属性値がcallableの場合に実行結果を返すかどうか
+	 * @return $this
+	 */
+	public static function createFromJson($json, $executeCallable = self::NOT_EXECUTE_CALLABLE)
+	{
+		$attributes = json_decode($json, true);
+		if ($attributes === null) {
+			switch (json_last_error()) {
+			case JSON_ERROR_DEPTH:
+				throw new \RuntimeException('JSON parse error: Maximum stack depth exceeded.');
+			case JSON_ERROR_STATE_MISMATCH:
+				throw new \RuntimeException('JSON parse error: Underflow or the modes mismatch.');
+			case JSON_ERROR_CTRL_CHAR:
+				throw new \RuntimeException('JSON parse error: Unexpected control character found.');
+			case JSON_ERROR_SYNTAX:
+				throw new \RuntimeException('JSON parse error: Syntax error, malformed JSON.');
+			case JSON_ERROR_UTF8:
+				throw new \RuntimeException('JSON parse error: Malformed UTF-8 characters, possibly incorrectly encoded.');
+			default:
+				throw new \RuntimeException('JSON parse error: Unknown error.');
+			}
+		}
+		return new static($attributes, $executeCallable);
+	}
+
+	/**
 	 * 属性名および初期値をセットします。
 	 *
 	 * @param string 属性名

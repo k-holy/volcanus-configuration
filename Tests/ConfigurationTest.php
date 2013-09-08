@@ -48,6 +48,31 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 		));
 	}
 
+	public function testCreateFromJson()
+	{
+		$config = Configuration::createFromJson(<<<'JSON'
+{
+    "foo": true,
+    "bar": false,
+    "arr": ["A", "B", "C"],
+    "dict": {
+        "a": "A",
+        "b": "B",
+        "c": "C"
+    }
+}
+JSON
+		);
+		$this->assertTrue($config['foo']);
+		$this->assertFalse($config['bar']);
+		$this->assertEquals('A', $config['arr'][0]);
+		$this->assertEquals('B', $config['arr'][1]);
+		$this->assertEquals('C', $config['arr'][2]);
+		$this->assertEquals('A', $config['dict']['a']);
+		$this->assertEquals('B', $config['dict']['b']);
+		$this->assertEquals('C', $config['dict']['c']);
+	}
+
 	public function testDefineAttribute()
 	{
 		$config = new Configuration();
