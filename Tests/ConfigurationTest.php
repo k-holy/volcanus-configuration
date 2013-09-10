@@ -146,7 +146,7 @@ JSON
 		$config->offsetGet('bar');
 	}
 
-	public function testOffsetGetCallableAttribute()
+	public function testOffsetGetCallableObjectAttribute()
 	{
 		$config = new Configuration(array(
 			'foo' => function() {
@@ -154,7 +154,17 @@ JSON
 			},
 		));
 		$this->assertTrue(is_callable($config->offsetGet('foo')));
+		$this->assertTrue(is_object($config->offsetGet('foo')));
 		$this->assertEquals('Im Closure', call_user_func($config->offsetGet('foo')));
+	}
+
+	public function testOffsetGetCallableStringAttribute()
+	{
+		$config = new Configuration(array(
+			'foo' => 'phpinfo',
+		));
+		$this->assertTrue(is_callable($config->offsetGet('foo')));
+		$this->assertEquals('phpinfo', $config->offsetGet('foo'));
 	}
 
 	public function testOffsetGetExecuteCallableAttribute()

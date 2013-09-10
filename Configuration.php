@@ -138,7 +138,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" does not exists.', $offset));
 		}
-		return (is_callable($this->attributes[$offset]) &&
+		return (is_object($this->attributes[$offset]) &&
+			is_callable($this->attributes[$offset]) &&
 			$this->executeCallable === self::EXECUTE_CALLABLE)
 				? $this->attributes[$offset]($this)
 				: $this->attributes[$offset];
@@ -198,7 +199,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	{
 		if (array_key_exists($name, $this->attributes)) {
 			$value = $this->attributes[$name];
-			if (is_callable($value)) {
+			if (is_object($value) && is_callable($value)) {
 				return call_user_func_array($value, $args);
 			}
 		}
