@@ -191,7 +191,7 @@ assert(false === isset($config->baz));
 echo '<p>offsetUnset() の実装による配列アクセスでの unset()</p>';
 $config = new Configuration(array(
     'foo' => false,
-);
+));
 assert(true === isset($config['foo']));
 unset($config['foo']);
 assert(false === isset($config['foo']));
@@ -199,7 +199,7 @@ assert(false === isset($config['foo']));
 echo '<p>__unset() の実装によるプロパティアクセスでの unset()</p>';
 $config = new Configuration(array(
     'foo' => false,
-);
+));
 assert(true === isset($config->foo));
 unset($config->foo);
 assert(false === isset($config->foo));
