@@ -78,13 +78,11 @@ $config['foo'] = 5;
 assert($config['bar'] === 10);
 
 
-echo '<p>Countable,Traversableも実装済み</p>';
+echo '<p>Traversable(IteratorAggregate)も実装済み</p>';
 $config = new Configuration(array(
     'foo' => false,
     'bar' => true,
 ));
-assert(count($config) === 2);
-
 foreach ($config as $name => $value) {
     switch ($name) {
     case 'foo':
@@ -204,3 +202,13 @@ assert(true === isset($config->foo));
 unset($config->foo);
 assert(false === isset($config->foo));
 ```
+
+##変更履歴
+
+* 0.4.0 import() を廃止、Countableインタフェースおよび count() の実装を廃止、define() 実行時にプロパティの存在を確認するよう修正
+* 0.3.0 __isset(), __unset() を実装
+* 0.2.3 属性値にcallableな文字列がセットされている際の offsetGet() および __call() の不具合を修正
+* 0.2.2 createFromJson() を実装
+* 0.2.1 toArray() による配列への変換時に属性値がcallableの場合は $executeCallable プロパティに従った値を返すよう修正
+* 0.2.0 toArray() を実装
+* 0.1.0 公開開始

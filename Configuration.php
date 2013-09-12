@@ -13,7 +13,7 @@ namespace Volcanus\Configuration;
  *
  * @author k.holy74@gmail.com
  */
-class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
+class Configuration implements \ArrayAccess, \IteratorAggregate
 {
 
 	const NOT_EXECUTE_CALLABLE = 0;
@@ -43,6 +43,9 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 
 	/**
 	 * 属性を初期化します。
+	 * 引数が指定されている場合は属性値を再帰的にセットします。
+	 * 要素が配列またはTraversable実装オブジェクトの場合、
+	 * ラッピングすることで配列アクセスとプロパティアクセスを提供します。
 	 *
 	 * @param array 属性の配列
 	 * @return $this
@@ -56,7 +59,23 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 				)
 			);
 		}
-		$this->attributes = (!empty($attributes)) ? $this->import($attributes) : array();
+		$this->attributes = array();
+		foreach ($attributes as $name => $value) {
+			if (property_exists($this, $name)) {
+				throw new \InvalidArgumentException(
+					sprintf('The attribute "%s" is already defined as a property.', $name)
+				);
+			}
+			if (method_exists($this, $name)) {
+				throw new \InvalidArgumentException(
+					sprintf('The attribute "%s" is already defined as a method.', $name)
+				);
+			}
+			$this->attributes[$name] = (is_array($value) || $value instanceof \Traversable)
+				? new static($value, $this->executeCallable)
+				: $value
+			;
+		}
 		return $this;
 	}
 
@@ -101,6 +120,11 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 		if (array_key_exists($name, $this->attributes)) {
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" already exists.', $name));
+		}
+		if (property_exists($this, $name)) {
+			throw new \InvalidArgumentException(
+				sprintf('The attribute "%s" is already defined as a property.', $name)
+			);
 		}
 		if (method_exists($this, $name)) {
 			throw new \InvalidArgumentException(
@@ -248,16 +272,6 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	}
 
 	/**
-	 * Countable::count()
-	 *
-	 * @return int
-	 */
-	public function count()
-	{
-		return count($this->attributes);
-	}
-
-	/**
 	 * 配列に変換して返します。
 	 *
 	 * @return array
@@ -272,30 +286,6 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 				: $value;
 		}
 		return $values;
-	}
-
-	/**
-	 * 属性値を配列から再帰的にセットします。
-	 * 要素が配列またはTraversable実装オブジェクトの場合、
-	 * ラッピングすることで配列アクセスとプロパティアクセスを提供します。
-	 *
-	 * @param array 属性の配列
-	 * @return array
-	 */
-	private function import($attributes)
-	{
-		foreach ($attributes as $name => $value) {
-			if (method_exists($this, $name)) {
-				throw new \InvalidArgumentException(
-					sprintf('The attribute "%s" is already defined as a method.', $name)
-				);
-			}
-			$attributes[$name] = (is_array($value) || $value instanceof \Traversable)
-				? new static($value, $this->executeCallable)
-				: $value
-			;
-		}
-		return $attributes;
 	}
 
 }
