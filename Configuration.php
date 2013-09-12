@@ -190,6 +190,27 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	}
 
 	/**
+	 * magic isset
+	 *
+	 * @param string 属性名
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		return $this->offsetExists($name);
+	}
+
+	/**
+	 * magic unset
+	 *
+	 * @param string 属性名
+	 */
+	public function __unset($name)
+	{
+		$this->offsetUnset($name);
+	}
+
+	/**
 	 * magic call method
 	 *
 	 * @param string
