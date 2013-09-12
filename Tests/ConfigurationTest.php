@@ -38,16 +38,6 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($config['bar']);
 	}
 
-	/**
-	 * @expectedException \InvalidArgumentException
-	 */
-	public function testRaiseExceptionWhenAttributeAlreadyDefinedAsAMethod()
-	{
-		$config = new Configuration(array(
-			'offsetSet' => false,
-		));
-	}
-
 	public function testCreateFromJson()
 	{
 		$config = Configuration::createFromJson(<<<'JSON'
@@ -98,22 +88,11 @@ JSON
 		$config->define('foo');
 	}
 
-	/**
-	 * @expectedException \InvalidArgumentException
-	 */
-	public function testRaiseExceptionWhenDefineAttributeAlreadyDefinedAsAMethod()
-	{
-		$config = new Configuration();
-		$config->define('offsetGet', true);
-	}
-
-	/**
-	 * @expectedException \InvalidArgumentException
-	 */
-	public function testRaiseExceptionWhenDefineAttributeAlreadyDefinedAsAProperty()
+	public function testDefineAttributeAsAProperty()
 	{
 		$config = new Configuration();
 		$config->define('attributes', true);
+		$this->assertTrue($config['attributes']);
 	}
 
 	public function testOffsetSet()
@@ -176,7 +155,7 @@ JSON
 		$this->assertEquals('phpinfo', $config->offsetGet('foo'));
 	}
 
-	public function testOffsetGetExecuteCallableAttribute()
+	public function testOffsetGetCallableObjectAttributeWithExcuteCallable()
 	{
 		$config = new Configuration(array(
 			'foo' => 0,
@@ -191,7 +170,7 @@ JSON
 		$this->assertEquals(10, $config->offsetGet('bar'));
 	}
 
-	public function testCallMethodCallableAttribute()
+	public function testCallMethodCallableObjectAttribute()
 	{
 		$config = new Configuration(array(
 			'foo' => function($name) {
@@ -221,6 +200,71 @@ JSON
 			'foo' => true,
 		));
 		$config->bar();
+	}
+
+	public function testConstructorAcceptAttributeAlreadyDefinedAsAMethod()
+	{
+		$config = new Configuration(array(
+			'offsetGet' => false,
+		));
+		$this->assertFalse($config['offsetGet']);
+		$config->offsetSet('offsetGet', true);
+		$this->assertTrue($config['offsetGet']);
+	}
+
+	public function testDefineAttributeAlreadyDefinedAsAMethod()
+	{
+		$config = new Configuration();
+		$config->define('offsetGet', false);
+		$this->assertFalse($config['offsetGet']);
+		$config->offsetSet('offsetGet', true);
+		$this->assertTrue($config['offsetGet']);
+	}
+
+	public function testConstructorAcceptCallableObjectAttributeAlreadyDefinedAsAMethod()
+	{
+		$config = new Configuration(array(
+			'offsetGet' => function() {
+				return false;
+			},
+		));
+		$this->assertFalse(call_user_func($config['offsetGet']));
+	}
+
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testRaiseExceptionWhenConstructorSetCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
+	{
+		$config = new Configuration(array(
+			'offsetGet' => function() {
+				return false;
+			},
+		), Configuration::EXECUTE_CALLABLE);
+	}
+
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testRaiseExceptionWhenDefineCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
+	{
+		$config = new Configuration(array(), Configuration::EXECUTE_CALLABLE);
+		$config->define('offsetGet', function() {
+			return false;
+		});
+	}
+
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testRaiseExceptionWhenSetCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
+	{
+		$config = new Configuration(array(
+			'offsetGet' => null,
+		), Configuration::EXECUTE_CALLABLE);
+		$config->offsetSet('offsetGet', function() {
+			return false;
+		});
 	}
 
 	public function testToString()

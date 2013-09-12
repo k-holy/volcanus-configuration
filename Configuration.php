@@ -61,20 +61,10 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 		}
 		$this->attributes = array();
 		foreach ($attributes as $name => $value) {
-			if (property_exists($this, $name)) {
-				throw new \InvalidArgumentException(
-					sprintf('The attribute "%s" is already defined as a property.', $name)
-				);
-			}
-			if (method_exists($this, $name)) {
-				throw new \InvalidArgumentException(
-					sprintf('The attribute "%s" is already defined as a method.', $name)
-				);
-			}
-			$this->attributes[$name] = (is_array($value) || $value instanceof \Traversable)
+			$this->define($name, (is_array($value) || $value instanceof \Traversable)
 				? new static($value, $this->executeCallable)
 				: $value
-			;
+			);
 		}
 		return $this;
 	}
@@ -121,12 +111,11 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" already exists.', $name));
 		}
-		if (property_exists($this, $name)) {
-			throw new \InvalidArgumentException(
-				sprintf('The attribute "%s" is already defined as a property.', $name)
-			);
-		}
-		if (method_exists($this, $name)) {
+		if ($this->executeCallable === self::EXECUTE_CALLABLE &&
+			(($value instanceof \Closure) ||
+				is_object($value) && method_exists($value, '__invoke')
+			) && method_exists($this, $name)
+		) {
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" is already defined as a method.', $name)
 			);
@@ -147,6 +136,15 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" does not exists.', $offset));
 		}
+		if ($this->executeCallable === self::EXECUTE_CALLABLE &&
+			(($value instanceof \Closure) ||
+				is_object($value) && method_exists($value, '__invoke')
+			) && method_exists($this, $offset)
+		) {
+			throw new \InvalidArgumentException(
+				sprintf('The attribute "%s" is already defined as a method.', $offset)
+			);
+		}
 		$this->attributes[$offset] = $value;
 	}
 
@@ -162,11 +160,14 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" does not exists.', $offset));
 		}
-		return (is_object($this->attributes[$offset]) &&
-			is_callable($this->attributes[$offset]) &&
-			$this->executeCallable === self::EXECUTE_CALLABLE)
-				? $this->attributes[$offset]($this)
-				: $this->attributes[$offset];
+		if ($this->executeCallable === self::EXECUTE_CALLABLE) {
+			if (($this->attributes[$offset] instanceof \Closure) ||
+				is_object($this->attributes[$offset]) && method_exists($this->attributes[$offset], '__invoke')
+			) {
+				return $this->attributes[$offset]($this);
+			}
+		}
+		return $this->attributes[$offset];
 	}
 
 	/**
@@ -243,9 +244,10 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	public function __call($name, $args)
 	{
 		if (array_key_exists($name, $this->attributes)) {
-			$value = $this->attributes[$name];
-			if (is_object($value) && is_callable($value)) {
-				return call_user_func_array($value, $args);
+			if (($this->attributes[$name] instanceof \Closure) ||
+				is_object($this->attributes[$name]) && method_exists($this->attributes[$name], '__invoke')
+			) {
+				return call_user_func_array($this->attributes[$name], $args);
 			}
 		}
 		throw new \BadMethodCallException(
