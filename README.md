@@ -162,3 +162,45 @@ assert('A' === $config['dict']['a']);
 assert('B' === $config['dict']['b']);
 assert('C' === $config['dict']['c']);
 ```
+
+ver 0.3.0 以降 offsetExists() と offsetUnset() だけではなく __isset() および __unset() も実装しました。
+
+恥ずかしながら、ずっとこのマジックメソッドの存在を忘れてました…。
+
+```php
+<?php
+
+echo '<p>offsetExists() の実装による未定義キーへの isset()</p>';
+$config = new Configuration(array(
+    'foo' => false,
+    'bar' => null,
+));
+assert(true === isset($config['foo']));
+assert(false === isset($config['bar']));
+assert(false === isset($config['baz']));
+
+echo '<p>__isset() の実装による未定義プロパティへの isset()</p>';
+$config = new Configuration(array(
+    'foo' => false,
+    'bar' => null,
+));
+assert(true === isset($config->foo));
+assert(false === isset($config->bar));
+assert(false === isset($config->baz));
+
+echo '<p>offsetUnset() の実装による配列アクセスでの unset()</p>';
+$config = new Configuration(array(
+    'foo' => false,
+));
+assert(true === isset($config['foo']));
+unset($config['foo']);
+assert(false === isset($config['foo']));
+
+echo '<p>__unset() の実装によるプロパティアクセスでの unset()</p>';
+$config = new Configuration(array(
+    'foo' => false,
+));
+assert(true === isset($config->foo));
+unset($config->foo);
+assert(false === isset($config->foo));
+```

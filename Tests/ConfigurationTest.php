@@ -259,14 +259,11 @@ JSON
 		$config = new Configuration(array(
 			'foo' => null,
 			'bar' => null,
-			'baz' => false,
 		));
 		$config['foo'] = true;
 		$config['bar'] = false;
-		unset($config['baz']);
 		$this->assertTrue($config['foo']);
 		$this->assertFalse($config['bar']);
-		$this->assertNull($config['baz']);
 	}
 
 	public function testPropertyAccess()
@@ -279,15 +276,6 @@ JSON
 		$config->bar = false;
 		$this->assertTrue($config->foo);
 		$this->assertFalse($config->bar);
-	}
-
-	public function testCouldNotUnsetWhenPropertyAccess()
-	{
-		$config = new Configuration(array(
-			'foo' => false,
-		));
-		unset($config->foo);
-		$this->assertFalse($config->foo); // caution!!
 	}
 
 	public function testIssetArrayAccess()
@@ -307,9 +295,29 @@ JSON
 			'foo' => false,
 			'bar' => null,
 		));
-		$this->assertFalse(isset($config->foo)); // WTF!!??
+		$this->assertTrue(isset($config->foo));
 		$this->assertFalse(isset($config->bar));
 		$this->assertFalse(isset($config->baz));
+	}
+
+	public function testUnsetArrayAccess()
+	{
+		$config = new Configuration(array(
+			'foo' => false,
+		));
+		$this->assertTrue(isset($config['foo']));
+		unset($config['foo']);
+		$this->assertFalse(isset($config['foo']));
+	}
+
+	public function testUnsetPropertyAccess()
+	{
+		$config = new Configuration(array(
+			'foo' => false,
+		));
+		$this->assertTrue(isset($config->foo));
+		unset($config->foo);
+		$this->assertFalse(isset($config->foo));
 	}
 
 	public function testIsNullArrayAccess()
@@ -328,7 +336,7 @@ JSON
 			'foo' => false,
 			'bar' => null,
 		));
-		$this->assertFalse(is_null($config->foo)); // OK
+		$this->assertFalse(is_null($config->foo));
 		$this->assertTrue(is_null($config->bar));
 	}
 
