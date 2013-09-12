@@ -13,7 +13,7 @@ namespace Volcanus\Configuration;
  *
  * @author k.holy74@gmail.com
  */
-class Configuration implements \ArrayAccess, \IteratorAggregate
+class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 {
 
 	const NOT_EXECUTE_CALLABLE = 0;
@@ -269,6 +269,16 @@ class Configuration implements \ArrayAccess, \IteratorAggregate
 	public function getIterator()
 	{
 		return new \ArrayIterator($this->attributes);
+	}
+
+	/**
+	 * Countable::count()
+	 *
+	 * @return int
+	 */
+	public function count()
+	{
+		return count($this->attributes);
 	}
 
 	/**

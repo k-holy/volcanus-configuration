@@ -78,7 +78,7 @@ $config['foo'] = 5;
 assert($config['bar'] === 10);
 
 
-echo '<p>Traversable(IteratorAggregate)も実装済み</p>';
+echo '<p>Traversable(IteratorAggregate), Countableも実装済み</p>';
 $config = new Configuration(array(
     'foo' => false,
     'bar' => true,
@@ -93,6 +93,7 @@ foreach ($config as $name => $value) {
         break;
     }
 }
+assert(count($config) === 2);
 
 echo '<p>再帰的に配列アクセス・プロパティアクセス</p>';
 $config = new Configuration(array(
@@ -205,6 +206,7 @@ assert(false === isset($config->foo));
 
 ##変更履歴
 
+* 0.4.1 Countableインタフェースおよび count() の実装を復旧
 * 0.4.0 import() を廃止、Countableインタフェースおよび count() の実装を廃止、define() 実行時にプロパティの存在を確認するよう修正
 * 0.3.0 __isset(), __unset() を実装
 * 0.2.3 属性値にcallableな文字列がセットされている際の offsetGet() および __call() の不具合を修正
