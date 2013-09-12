@@ -107,6 +107,15 @@ JSON
 		$config->define('offsetGet', true);
 	}
 
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testRaiseExceptionWhenDefineAttributeAlreadyDefinedAsAProperty()
+	{
+		$config = new Configuration();
+		$config->define('attributes', true);
+	}
+
 	public function testOffsetSet()
 	{
 		$config = new Configuration(array(
@@ -405,16 +414,6 @@ JSON
 				break;
 			}
 		}
-	}
-
-	public function testImplementsCountable()
-	{
-		$config = new Configuration(array(
-			'foo' => true,
-			'bar' => false,
-		));
-		$this->assertInstanceOf('\Countable', $config);
-		$this->assertCount(2, $config);
 	}
 
 	public function testToArray()
