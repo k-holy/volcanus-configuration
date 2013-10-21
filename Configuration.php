@@ -61,10 +61,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 		}
 		$this->attributes = array();
 		foreach ($attributes as $name => $value) {
-			$this->define($name, (is_array($value) || $value instanceof \Traversable)
-				? new static($value, $this->executeCallable)
-				: $value
-			);
+			$this->define($name, $value);
 		}
 		return $this;
 	}
@@ -112,13 +109,15 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 				sprintf('The attribute "%s" already exists.', $name));
 		}
 		if ($this->executeCallable === self::EXECUTE_CALLABLE &&
-			(($value instanceof \Closure) ||
-				is_object($value) && method_exists($value, '__invoke')
-			) && method_exists($this, $name)
+			$value instanceof \Closure &&
+			method_exists($this, $name)
 		) {
 			throw new \InvalidArgumentException(
 				sprintf('The attribute "%s" is already defined as a method.', $name)
 			);
+		}
+		if (is_array($value) || $value instanceof \Traversable) {
+			$value = new static($value, $this->executeCallable);
 		}
 		$this->attributes[$name] = $value;
 		return $this;
@@ -130,22 +129,24 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param mixed
 	 * @param mixed
 	 */
-	public function offsetSet($offset, $value)
+	public function offsetSet($name, $value)
 	{
-		if (!array_key_exists($offset, $this->attributes)) {
+		if (!array_key_exists($name, $this->attributes)) {
 			throw new \InvalidArgumentException(
-				sprintf('The attribute "%s" does not exists.', $offset));
+				sprintf('The attribute "%s" does not exists.', $name));
 		}
 		if ($this->executeCallable === self::EXECUTE_CALLABLE &&
-			(($value instanceof \Closure) ||
-				is_object($value) && method_exists($value, '__invoke')
-			) && method_exists($this, $offset)
+			$value instanceof \Closure &&
+			method_exists($this, $name)
 		) {
 			throw new \InvalidArgumentException(
-				sprintf('The attribute "%s" is already defined as a method.', $offset)
+				sprintf('The attribute "%s" is already defined as a method.', $name)
 			);
 		}
-		$this->attributes[$offset] = $value;
+		if (is_array($value) || $value instanceof \Traversable) {
+			$value = new static($value, $this->executeCallable);
+		}
+		$this->attributes[$name] = $value;
 	}
 
 	/**
@@ -154,20 +155,16 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param mixed
 	 * @return mixed
 	 */
-	public function offsetGet($offset)
+	public function offsetGet($name)
 	{
-		if (!array_key_exists($offset, $this->attributes)) {
+		if (!array_key_exists($name, $this->attributes)) {
 			throw new \InvalidArgumentException(
-				sprintf('The attribute "%s" does not exists.', $offset));
+				sprintf('The attribute "%s" does not exists.', $name));
 		}
-		if ($this->executeCallable === self::EXECUTE_CALLABLE) {
-			if (($this->attributes[$offset] instanceof \Closure) ||
-				is_object($this->attributes[$offset]) && method_exists($this->attributes[$offset], '__invoke')
-			) {
-				return $this->attributes[$offset]($this);
-			}
+		if ($this->executeCallable === self::EXECUTE_CALLABLE && $this->attributes[$name] instanceof \Closure) {
+			return $this->attributes[$name]($this);
 		}
-		return $this->attributes[$offset];
+		return $this->attributes[$name];
 	}
 
 	/**
@@ -175,10 +172,10 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @param mixed
 	 */
-	public function offsetUnset($offset)
+	public function offsetUnset($name)
 	{
-		if (array_key_exists($offset, $this->attributes)) {
-			$this->attributes[$offset] = null;
+		if (array_key_exists($name, $this->attributes)) {
+			$this->attributes[$name] = null;
 		}
 	}
 
@@ -188,9 +185,9 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param mixed
 	 * @return bool
 	 */
-	public function offsetExists($offset)
+	public function offsetExists($name)
 	{
-		return isset($this->attributes[$offset]);
+		return isset($this->attributes[$name]);
 	}
 
 	/**
@@ -243,12 +240,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function __call($name, $args)
 	{
-		if (array_key_exists($name, $this->attributes)) {
-			if (($this->attributes[$name] instanceof \Closure) ||
-				is_object($this->attributes[$name]) && method_exists($this->attributes[$name], '__invoke')
-			) {
-				return call_user_func_array($this->attributes[$name], $args);
-			}
+		if (array_key_exists($name, $this->attributes) && $this->attributes[$name] instanceof \Closure) {
+			return call_user_func_array($this->attributes[$name], $args);
 		}
 		throw new \BadMethodCallException(
 			sprintf('Undefined Method "%s" called.', $name)
@@ -297,6 +290,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 				? $value->toArray()
 				: $value;
 		}
+		ksort($values);
 		return $values;
 	}
 

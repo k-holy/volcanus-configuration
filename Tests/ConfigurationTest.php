@@ -441,6 +441,46 @@ JSON
 		$this->assertEquals('Im Closure', $config->object->a->callable);
 	}
 
+	public function testSetAttributeToNestedAttribute()
+	{
+		$config = new Configuration(array(
+			'users' => array(
+				'foo'  => array(
+					'id'   => null,
+					'name' => null,
+				),
+				'bar' => array(),
+			),
+		));
+		$config->users->foo->id = 1;
+		$config->users->foo->name = 'FOO';
+		$config->users->bar = array(
+			'id'   => 2,
+			'name' => 'BAR',
+		);
+		$this->assertEquals(1, $config->users->foo->id);
+		$this->assertEquals('FOO', $config->users->foo->name);
+		$this->assertEquals(2, $config->users->bar->id);
+		$this->assertEquals('BAR', $config->users->bar->name);
+	}
+
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testRaiseExceptionWhenSetAttributeToNestedAttributeNotDefined()
+	{
+		$config = new Configuration(array(
+			'users' => array(
+				'foo'  => array(
+					'id'   => null,
+					'name' => null,
+				),
+				'bar' => array(),
+			),
+		));
+		$config->users->bar->id = 1;
+	}
+
 	public function testImplementsTraversable()
 	{
 		$config = new Configuration(array(
@@ -493,5 +533,30 @@ JSON
 			),
 		), $config->toArray());
 	}
+
+	public function testToArraySortedByKey()
+	{
+		$config = new Configuration(array(
+			'array' => array('b' => 'B', 'a' => 'A', 'c' => 'C'),
+			'object' => new \ArrayObject(array(
+				'a' => new \ArrayObject(array(
+					'a' => array('b' => 'B', 'a' => 'A', 'c' => array('b' => 'B', 'a' => 'A', 'c'=> 'C')),
+					'callable' => function() {
+						return 'Im Closure';
+					},
+				)),
+			)),
+		), Configuration::EXECUTE_CALLABLE);
+		$this->assertEquals(array(
+			'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
+			'object' => array(
+				'a' => array(
+					'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
+					'callable' => 'Im Closure',
+				),
+			),
+		), $config->toArray());
+	}
+
 
 }
