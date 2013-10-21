@@ -1,5 +1,7 @@
 #Volcanus_Configuration
 
+[![Latest Stable Version](https://poser.pugx.org/volcanus/configuration/v/stable.png)](https://packagist.org/packages/volcanus/configuration)
+[![Build Status](https://travis-ci.org/k-holy/volcanus-configuration.png?branch=master)](https://travis-ci.org/k-holy/volcanus-configuration)
 
 ##使い方
 
