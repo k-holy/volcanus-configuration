@@ -1,9 +1,9 @@
 {
     "name": "volcanus/configuration",
+    "homepage": "https://github.com/k-holy/volcanus-configuration",
     "type": "library",
     "description": "Array class for configurations",
-    "homepage": "https://github.com/k-holy/volcanus-configuration",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "license": "MIT",
     "authors": [
         {
@@ -11,11 +11,14 @@
             "email": "k.holy74@gmail.com"
         }
     ],
-    "require": {
-        "php": ">=5.3"
-    },
     "autoload": {
-        "psr-0": { "Volcanus\\Configuration": "" }
+        "psr-0": { "Volcanus\\Configuration": "." }
     },
-    "target-dir": "Volcanus/Configuration"
+    "target-dir": "Volcanus/Configuration",
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "require-dev": {
+        "satooshi/php-coveralls": "dev-master"
+    }
 }
