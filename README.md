@@ -209,6 +209,7 @@ assert(false === isset($config->foo));
 
 ##変更履歴
 
+* 0.5.0 リファクタリング、テストケース追加
 * 0.4.2 define() 実行時のプロパティ存在確認を廃止、define() および offsetSet() 時のcallableな値とメソッドの存在確認は EXECUTE_CALLABLE フラグが有効な場合のみ行うよう修正
 * 0.4.1 Countableインタフェースおよび count() の実装を復旧
 * 0.4.0 import() を廃止、Countableインタフェースおよび count() の実装を廃止、define() 実行時にプロパティの存在を確認するよう修正
