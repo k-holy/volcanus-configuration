@@ -2,7 +2,7 @@
 /**
  * Volcanus libraries for PHP
  *
- * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
+ * @copyright k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
 
@@ -49,6 +49,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 *
 	 * @param array 属性の配列
 	 * @return $this
+	 * @throws \InvalidArgumentException
 	 */
 	public function initialize($attributes = array())
 	{
@@ -72,25 +73,37 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param string JSON文字列
 	 * @param int 属性値がcallableの場合に実行結果を返すかどうか
 	 * @return $this
+	 * @throws \InvalidArgumentException
 	 */
 	public static function createFromJson($json, $executeCallable = self::NOT_EXECUTE_CALLABLE)
 	{
 		$attributes = json_decode($json, true);
 		if ($attributes === null) {
-			switch (json_last_error()) {
-			case JSON_ERROR_DEPTH:
-				throw new \RuntimeException('JSON parse error: Maximum stack depth exceeded.');
-			case JSON_ERROR_STATE_MISMATCH:
-				throw new \RuntimeException('JSON parse error: Underflow or the modes mismatch.');
-			case JSON_ERROR_CTRL_CHAR:
-				throw new \RuntimeException('JSON parse error: Unexpected control character found.');
-			case JSON_ERROR_SYNTAX:
-				throw new \RuntimeException('JSON parse error: Syntax error, malformed JSON.');
-			case JSON_ERROR_UTF8:
-				throw new \RuntimeException('JSON parse error: Malformed UTF-8 characters, possibly incorrectly encoded.');
-			default:
-				throw new \RuntimeException('JSON parse error: Unknown error.');
+			$message = 'Unknown error.';
+			if (function_exists('json_last_error_msg')) {
+				$message = json_last_error_msg();
+			} else {
+				switch (json_last_error()) {
+				case JSON_ERROR_DEPTH:
+					$message = 'Maximum stack depth exceeded.';
+					break;
+				case JSON_ERROR_STATE_MISMATCH:
+					$message = 'Underflow or the modes mismatch.';
+					break;
+				case JSON_ERROR_CTRL_CHAR:
+					$message = 'Unexpected control character found.';
+					break;
+				case JSON_ERROR_SYNTAX:
+					$message = 'Syntax error, malformed JSON.';
+					break;
+				case JSON_ERROR_UTF8:
+					$message = 'Malformed UTF-8 characters, possibly incorrectly encoded.';
+					break;
+				default:
+					break;
+				}
 			}
+			throw new \InvalidArgumentException(sprintf('JSON parse error: %s', $message));
 		}
 		return new static($attributes, $executeCallable);
 	}
@@ -101,6 +114,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 * @param string 属性名
 	 * @param mixed 初期値
 	 * @return $this
+	 * @throws \InvalidArgumentException
 	 */
 	public function define($name, $value = null)
 	{
@@ -124,12 +138,45 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	}
 
 	/**
-	 * ArrayAccess::offsetSet()
+	 * __isset
+	 *
+	 * @param mixed
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		return (array_key_exists($name, $this->attributes) && $this->attributes[$name] !== null);
+	}
+
+	/**
+	 * __get
+	 *
+	 * @param mixed
+	 * @return mixed
+	 * @throws \InvalidArgumentException
+	 */
+	public function __get($name)
+	{
+		if (!array_key_exists($name, $this->attributes)) {
+			throw new \InvalidArgumentException(
+				sprintf('The attribute "%s" does not exists.', $name));
+		}
+		if ($this->executeCallable === self::EXECUTE_CALLABLE &&
+			$this->attributes[$name] instanceof \Closure
+		) {
+			return $this->attributes[$name]($this);
+		}
+		return $this->attributes[$name];
+	}
+
+	/**
+	 * __set
 	 *
 	 * @param mixed
 	 * @param mixed
+	 * @throws \InvalidArgumentException
 	 */
-	public function offsetSet($name, $value)
+	public function __set($name, $value)
 	{
 		if (!array_key_exists($name, $this->attributes)) {
 			throw new \InvalidArgumentException(
@@ -150,29 +197,11 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	}
 
 	/**
-	 * ArrayAccess::offsetGet()
-	 *
-	 * @param mixed
-	 * @return mixed
-	 */
-	public function offsetGet($name)
-	{
-		if (!array_key_exists($name, $this->attributes)) {
-			throw new \InvalidArgumentException(
-				sprintf('The attribute "%s" does not exists.', $name));
-		}
-		if ($this->executeCallable === self::EXECUTE_CALLABLE && $this->attributes[$name] instanceof \Closure) {
-			return $this->attributes[$name]($this);
-		}
-		return $this->attributes[$name];
-	}
-
-	/**
-	 * ArrayAccess::offsetUnset()
+	 * __unset
 	 *
 	 * @param mixed
 	 */
-	public function offsetUnset($name)
+	public function __unset($name)
 	{
 		if (array_key_exists($name, $this->attributes)) {
 			$this->attributes[$name] = null;
@@ -187,49 +216,39 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	 */
 	public function offsetExists($name)
 	{
-		return isset($this->attributes[$name]);
+		return $this->__isset($name);
 	}
 
 	/**
-	 * magic setter
+	 * ArrayAccess::offsetGet()
 	 *
-	 * @param string 属性名
-	 * @param mixed 属性値
+	 * @param mixed
+	 * @return mixed
 	 */
-	public function __set($name, $value)
+	public function offsetGet($name)
 	{
-		$this->offsetSet($name, $value);
+		return $this->__get($name);
 	}
 
 	/**
-	 * magic getter
+	 * ArrayAccess::offsetSet()
 	 *
-	 * @param string 属性名
+	 * @param mixed
+	 * @param mixed
 	 */
-	public function __get($name)
+	public function offsetSet($name, $value)
 	{
-		return $this->offsetGet($name);
+		$this->__set($name, $value);
 	}
 
 	/**
-	 * magic isset
+	 * ArrayAccess::offsetUnset()
 	 *
-	 * @param string 属性名
-	 * @return bool
+	 * @param mixed
 	 */
-	public function __isset($name)
+	public function offsetUnset($name)
 	{
-		return $this->offsetExists($name);
-	}
-
-	/**
-	 * magic unset
-	 *
-	 * @param string 属性名
-	 */
-	public function __unset($name)
-	{
-		$this->offsetUnset($name);
+		$this->__unset($name);
 	}
 
 	/**
@@ -285,7 +304,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
 	{
 		$values = array();
 		foreach ($this->attributes as $name => $value) {
-			$value = $this->offsetGet($name);
+			$value = $this->__get($name);
 			$values[$name] = ($value instanceof self)
 				? $value->toArray()
 				: $value;

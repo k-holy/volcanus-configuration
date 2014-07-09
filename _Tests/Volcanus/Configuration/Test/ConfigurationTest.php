@@ -2,11 +2,11 @@
 /**
  * Volcanus libraries for PHP
  *
- * @copyright 2011-2013 k-holy <k.holy74@gmail.com>
+ * @copyright k-holy <k.holy74@gmail.com>
  * @license The MIT License (MIT)
  */
 
-namespace Volcanus\Configuration\Tests;
+namespace Volcanus\Configuration\Test;
 
 use Volcanus\Configuration\Configuration;
 
@@ -61,6 +61,26 @@ JSON
 		$this->assertEquals('A', $config['dict']['a']);
 		$this->assertEquals('B', $config['dict']['b']);
 		$this->assertEquals('C', $config['dict']['c']);
+	}
+
+	/**
+	 * @expectedException \InvalidArgumentException
+	 */
+	public function testCreateFromJsonRaiseExceptionWhenMalformedJson()
+	{
+		$config = Configuration::createFromJson(<<<'JSON'
+{
+    "foo": true,
+    "bar": false,
+    "arr": ["A", "B", "C"],
+    "dict": {
+        "a": "A",
+        "b": "B",
+        "c": "C",
+    }
+}
+JSON
+		);
 	}
 
 	public function testDefineAttribute()
