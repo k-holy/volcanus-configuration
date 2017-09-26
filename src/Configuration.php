@@ -32,8 +32,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * コンストラクタ
      *
-     * @param array 属性の配列
-     * @param int 属性値がcallableの場合に実行結果を返すかどうか
+     * @param array $attributes 属性の配列
+     * @param int $executeCallable 属性値がcallableの場合に実行結果を返すかどうか
      */
     public function __construct($attributes = array(), $executeCallable = self::NOT_EXECUTE_CALLABLE)
     {
@@ -47,7 +47,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      * 要素が配列またはTraversable実装オブジェクトの場合、
      * ラッピングすることで配列アクセスとプロパティアクセスを提供します。
      *
-     * @param array 属性の配列
+     * @param array $attributes 属性の配列
      * @return $this
      * @throws \InvalidArgumentException
      */
@@ -70,8 +70,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * JSON文字列を元にオブジェクトを生成して返します。
      *
-     * @param string JSON文字列
-     * @param int 属性値がcallableの場合に実行結果を返すかどうか
+     * @param string $json JSON文字列
+     * @param int $executeCallable 属性値がcallableの場合に実行結果を返すかどうか
      * @return $this
      * @throws \InvalidArgumentException
      */
@@ -111,8 +111,8 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * 属性名および初期値をセットします。
      *
-     * @param string 属性名
-     * @param mixed 初期値
+     * @param string $name 属性名
+     * @param mixed $value 初期値
      * @return $this
      * @throws \InvalidArgumentException
      */
@@ -254,8 +254,9 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * magic call method
      *
-     * @param string
-     * @param array
+     * @param string $name
+     * @param array $args
+     * @return mixed
      */
     public function __call($name, $args)
     {
@@ -272,7 +273,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      */
     public function __toString()
     {
-        return var_export($this->toArray(), true);
+        return (string)var_export($this->toArray(), true);
     }
 
     /**

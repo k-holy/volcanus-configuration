@@ -68,6 +68,7 @@ JSON
      */
     public function testCreateFromJsonRaiseExceptionWhenMalformedJson()
     {
+        /** @noinspection PhpUnusedLocalVariableInspection */
         $config = Configuration::createFromJson(<<<'JSON'
 {
     "foo": true,
@@ -197,6 +198,7 @@ JSON
                 return sprintf('Im %s', $name);
             },
         ));
+        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals('Im Argument', $config->foo('Argument'));
     }
 
@@ -208,6 +210,7 @@ JSON
         $config = new Configuration(array(
             'foo' => true,
         ));
+        /** @noinspection PhpUndefinedMethodInspection */
         $config->foo();
     }
 
@@ -219,6 +222,7 @@ JSON
         $config = new Configuration(array(
             'foo' => true,
         ));
+        /** @noinspection PhpUndefinedMethodInspection */
         $config->bar();
     }
 
@@ -256,6 +260,7 @@ JSON
      */
     public function testRaiseExceptionWhenConstructorSetCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
     {
+        /** @noinspection PhpUnusedLocalVariableInspection */
         $config = new Configuration(array(
             'offsetGet' => function () {
                 return false;
