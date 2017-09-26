@@ -68,7 +68,7 @@ assert($config['bar'] === $config->bar);
 echo '<p>クロージャを値にして設定値を動的に※オプション</p>';
 $config = new Configuration(array(
     'foo' => 0,
-    'bar' => function($config) {
+    'bar' => function ($config) {
         return $config['foo'] * 2;
     },
 ), Configuration::EXECUTE_CALLABLE);
@@ -88,12 +88,12 @@ assert(count($config) === 2);
 
 foreach ($config as $name => $value) {
     switch ($name) {
-    case 'foo':
-        assert($value === false);
-        break;
-    case 'bar':
-        assert($value === true);
-        break;
+        case 'foo':
+            assert($value === false);
+            break;
+        case 'bar':
+            assert($value === true);
+            break;
     }
 }
 
@@ -102,7 +102,7 @@ $config = new Configuration(array(
     'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
     'object' => new \ArrayObject(array(
         'a' => new \ArrayObject(array(
-            'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
+            'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c' => 'C')),
         )),
     )),
 ));
