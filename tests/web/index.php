@@ -47,18 +47,18 @@ try {
 
 
 echo '<p>コンストラクタで定義できる</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => null,
     'bar' => true,
-));
+]);
 assert($config->foo === null);
 
 
 echo '<p>プロパティアクセス、配列アクセスのどちらも実装済み</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
     'bar' => true,
-));
+]);
 $config['foo'] = true;
 $config->bar = false;
 assert($config['foo'] === $config->foo);
@@ -66,12 +66,12 @@ assert($config['bar'] === $config->bar);
 
 
 echo '<p>クロージャを値にして設定値を動的に※オプション</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => 0,
     'bar' => function ($config) {
         return $config['foo'] * 2;
     },
-), Configuration::EXECUTE_CALLABLE);
+], Configuration::EXECUTE_CALLABLE);
 assert($config['bar'] === 0);
 $config['foo'] = 1;
 assert($config['bar'] === 2);
@@ -80,10 +80,10 @@ assert($config['bar'] === 10);
 
 
 echo '<p>Countable,Traversableも実装済み</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
     'bar' => true,
-));
+]);
 assert(count($config) === 2);
 
 foreach ($config as $name => $value) {
@@ -98,14 +98,14 @@ foreach ($config as $name => $value) {
 }
 
 echo '<p>再帰的に配列アクセス・プロパティアクセス</p>';
-$config = new Configuration(array(
-    'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
-    'object' => new \ArrayObject(array(
-        'a' => new \ArrayObject(array(
-            'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c' => 'C')),
-        )),
-    )),
-));
+$config = new Configuration([
+    'array' => ['a' => 'A', 'b' => 'B', 'c' => 'C'],
+    'object' => new \ArrayObject([
+        'a' => new \ArrayObject([
+            'a' => ['a' => 'A', 'b' => 'B', 'c' => ['a' => 'A', 'b' => 'B', 'c' => 'C']],
+        ]),
+    ]),
+]);
 
 assert('A' === $config['array']['a']);
 assert('B' === $config['array']['b']);
