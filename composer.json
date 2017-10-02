@@ -3,7 +3,7 @@
   "homepage": "https://github.com/k-holy/volcanus-configuration",
   "type": "library",
   "description": "Array class for configurations",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "license": "MIT",
   "authors": [
     {
