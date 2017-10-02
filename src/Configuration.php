@@ -35,7 +35,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      * @param array $attributes 属性の配列
      * @param int $executeCallable 属性値がcallableの場合に実行結果を返すかどうか
      */
-    public function __construct($attributes = array(), $executeCallable = self::NOT_EXECUTE_CALLABLE)
+    public function __construct($attributes = [], $executeCallable = self::NOT_EXECUTE_CALLABLE)
     {
         $this->executeCallable = $executeCallable;
         $this->initialize($attributes);
@@ -51,7 +51,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      * @return $this
      * @throws \InvalidArgumentException
      */
-    public function initialize($attributes = array())
+    public function initialize($attributes = [])
     {
         if (!is_array($attributes) && !($attributes instanceof \Traversable)) {
             throw new \InvalidArgumentException(
@@ -60,7 +60,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
                 )
             );
         }
-        $this->attributes = array();
+        $this->attributes = [];
         foreach ($attributes as $name => $value) {
             $this->define($name, $value);
         }
@@ -303,7 +303,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      */
     public function toArray()
     {
-        $values = array();
+        $values = [];
         foreach ($this->attributes as $name => $value) {
             $value = $this->__get($name);
             $values[$name] = ($value instanceof self)
