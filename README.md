@@ -1,10 +1,9 @@
-#Volcanus_Configuration
+# Volcanus_Configuration
 
 [![Latest Stable Version](https://poser.pugx.org/volcanus/configuration/v/stable.png)](https://packagist.org/packages/volcanus/configuration)
-[![Build Status](https://travis-ci.org/k-holy/volcanus-configuration.png?branch=master)](https://travis-ci.org/k-holy/volcanus-configuration)
-[![Coverage Status](https://coveralls.io/repos/k-holy/volcanus-configuration/badge.png?branch=master)](https://coveralls.io/r/k-holy/volcanus-configuration?branch=master)
+[![Continuous Integration](https://github.com/k-holy/volcanus-configuration/actions/workflows/ci.yml/badge.svg)](https://github.com/k-holy/volcanus-configuration/actions/workflows/ci.yml)
 
-##使い方
+## 使い方
 
 ```php
 <?php
@@ -49,18 +48,18 @@ try {
 
 
 echo '<p>コンストラクタで定義できる</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => null,
     'bar' => true,
-));
+]);
 assert($config->foo === null);
 
 
 echo '<p>プロパティアクセス、配列アクセスのどちらも実装済み</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
     'bar' => true,
-));
+]);
 $config['foo'] = true;
 $config->bar = false;
 assert($config['foo'] === $config->foo);
@@ -68,12 +67,12 @@ assert($config['bar'] === $config->bar);
 
 
 echo '<p>クロージャを値にして設定値を動的に※オプション</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => 0,
     'bar' => function($config) {
         return $config['foo'] * 2;
     },
-), Configuration::EXECUTE_CALLABLE);
+], Configuration::EXECUTE_CALLABLE);
 assert($config['bar'] === 0);
 $config['foo'] = 1;
 assert($config['bar'] === 2);
@@ -82,10 +81,10 @@ assert($config['bar'] === 10);
 
 
 echo '<p>Traversable(IteratorAggregate), Countableも実装済み</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
     'bar' => true,
-));
+]);
 foreach ($config as $name => $value) {
     switch ($name) {
     case 'foo':
@@ -99,14 +98,14 @@ foreach ($config as $name => $value) {
 assert(count($config) === 2);
 
 echo '<p>再帰的に配列アクセス・プロパティアクセス</p>';
-$config = new Configuration(array(
-    'array' => array('a' => 'A', 'b' => 'B', 'c' => 'C'),
-    'object' => new \ArrayObject(array(
-        'a' => new \ArrayObject(array(
-            'a' => array('a' => 'A', 'b' => 'B', 'c' => array('a' => 'A', 'b' => 'B', 'c'=> 'C')),
-        )),
-    )),
-));
+$config = new Configuration([
+    'array' => ['a' => 'A', 'b' => 'B', 'c' => 'C'],
+    'object' => new \ArrayObject([
+        'a' => new \ArrayObject([
+            'a' => ['a' => 'A', 'b' => 'B', 'c' => ['a' => 'A', 'b' => 'B', 'c'=> 'C']],
+        ]),
+    ]),
+]);
 
 assert('A' === $config['array']['a']);
 assert('B' === $config['array']['b']);
@@ -163,59 +162,42 @@ assert('C' === $config['arr'][2]);
 assert('A' === $config['dict']['a']);
 assert('B' === $config['dict']['b']);
 assert('C' === $config['dict']['c']);
-```
-
-ver 0.3.0 以降 offsetExists() と offsetUnset() だけではなく __isset() および __unset() も実装しました。
-
-恥ずかしながら、ずっとこのマジックメソッドの存在を忘れてました…。
-
-```php
-<?php
 
 echo '<p>offsetExists() の実装による未定義キーへの isset()</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
     'bar' => null,
-));
+]);
 assert(true === isset($config['foo']));
 assert(false === isset($config['bar']));
 assert(false === isset($config['baz']));
 
 echo '<p>__isset() の実装による未定義プロパティへの isset()</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
     'bar' => null,
-));
+]);
 assert(true === isset($config->foo));
 assert(false === isset($config->bar));
 assert(false === isset($config->baz));
 
 echo '<p>offsetUnset() の実装による配列アクセスでの unset()</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
-));
+]);
 assert(true === isset($config['foo']));
 unset($config['foo']);
 assert(false === isset($config['foo']));
 
 echo '<p>__unset() の実装によるプロパティアクセスでの unset()</p>';
-$config = new Configuration(array(
+$config = new Configuration([
     'foo' => false,
-));
+]);
 assert(true === isset($config->foo));
 unset($config->foo);
 assert(false === isset($config->foo));
 ```
 
-##変更履歴
+## 対応環境
 
-* 0.5.0 リファクタリング、テストケース追加
-* 0.4.2 define() 実行時のプロパティ存在確認を廃止、define() および offsetSet() 時のcallableな値とメソッドの存在確認は EXECUTE_CALLABLE フラグが有効な場合のみ行うよう修正
-* 0.4.1 Countableインタフェースおよび count() の実装を復旧
-* 0.4.0 import() を廃止、Countableインタフェースおよび count() の実装を廃止、define() 実行時にプロパティの存在を確認するよう修正
-* 0.3.0 __isset(), __unset() を実装
-* 0.2.3 属性値にcallableな文字列がセットされている際の offsetGet() および __call() の不具合を修正
-* 0.2.2 createFromJson() を実装
-* 0.2.1 toArray() による配列への変換時に属性値がcallableの場合は $executeCallable プロパティに従った値を返すよう修正
-* 0.2.0 toArray() を実装
-* 0.1.0 公開開始
+* PHP 8.1以降
