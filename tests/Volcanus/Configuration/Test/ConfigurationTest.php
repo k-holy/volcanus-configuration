@@ -8,6 +8,7 @@
 
 namespace Volcanus\Configuration\Test;
 
+use PHPUnit\Framework\TestCase;
 use Volcanus\Configuration\Configuration;
 
 /**
@@ -15,7 +16,7 @@ use Volcanus\Configuration\Configuration;
  *
  * @author k.holy74@gmail.com
  */
-class ConfigurationTest extends \PHPUnit\Framework\TestCase
+class ConfigurationTest extends TestCase
 {
 
     public function testConstructor()
@@ -63,12 +64,11 @@ JSON
         $this->assertEquals('C', $config['dict']['c']);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testCreateFromJsonRaiseExceptionWhenMalformedJson()
     {
+        $this->expectException(\InvalidArgumentException::class);
         /** @noinspection PhpUnusedLocalVariableInspection */
+        /** @noinspection JsonStandardCompliance */
         $config = Configuration::createFromJson(<<<'JSON'
 {
     "foo": true,
@@ -98,11 +98,9 @@ JSON
         $this->assertTrue($config['foo']);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRaiseExceptionWhenDefineAttributeAlreadyExists()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $config = new Configuration([
             'foo' => null,
         ]);
@@ -125,11 +123,9 @@ JSON
         $this->assertTrue($config['foo']);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRaiseExceptionWhenSetAttributeNotDefined()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $config = new Configuration([
             'foo' => true,
         ]);
@@ -144,11 +140,9 @@ JSON
         $this->assertTrue($config->offsetGet('foo'));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRaiseExceptionWhenGetAttributeNotDefined()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $config = new Configuration([
             'foo' => true,
         ]);
@@ -202,11 +196,9 @@ JSON
         $this->assertEquals('Im Argument', $config->foo('Argument'));
     }
 
-    /**
-     * @expectedException \BadMethodCallException
-     */
     public function testRaiseExceptionWhenCallMethodAttributeNotCallable()
     {
+        $this->expectException(\BadMethodCallException::class);
         $config = new Configuration([
             'foo' => true,
         ]);
@@ -214,11 +206,9 @@ JSON
         $config->foo();
     }
 
-    /**
-     * @expectedException \BadMethodCallException
-     */
     public function testRaiseExceptionWhenCallMethodAttributeNotDefined()
     {
+        $this->expectException(\BadMethodCallException::class);
         $config = new Configuration([
             'foo' => true,
         ]);
@@ -255,11 +245,9 @@ JSON
         $this->assertFalse(call_user_func($config['offsetGet']));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRaiseExceptionWhenConstructorSetCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
     {
+        $this->expectException(\InvalidArgumentException::class);
         /** @noinspection PhpUnusedLocalVariableInspection */
         $config = new Configuration([
             'offsetGet' => function () {
@@ -268,22 +256,18 @@ JSON
         ], Configuration::EXECUTE_CALLABLE);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRaiseExceptionWhenDefineCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $config = new Configuration([], Configuration::EXECUTE_CALLABLE);
         $config->define('offsetGet', function () {
             return false;
         });
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testRaiseExceptionWhenSetCallableObjectAttributeAlreadyDefinedAsAMethodWithExcuteCallable()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $config = new Configuration([
             'offsetGet' => null,
         ], Configuration::EXECUTE_CALLABLE);
@@ -344,6 +328,7 @@ JSON
         $this->assertFalse($config['bar']);
     }
 
+    /** @noinspection PhpUndefinedFieldInspection */
     public function testPropertyAccess()
     {
         $config = new Configuration([
@@ -395,6 +380,7 @@ JSON
         ]);
         $this->assertTrue(isset($config->foo));
         unset($config->foo);
+        /** @noinspection PhpConditionAlreadyCheckedInspection */
         $this->assertFalse(isset($config->foo));
     }
 
@@ -408,6 +394,7 @@ JSON
         $this->assertTrue(is_null($config['bar']));
     }
 
+    /** @noinspection PhpUndefinedFieldInspection */
     public function testIsNullPropertyAccess()
     {
         $config = new Configuration([
@@ -442,6 +429,7 @@ JSON
         $this->assertEquals('Im Closure', $config['object']['a']['callable']);
     }
 
+    /** @noinspection PhpUndefinedFieldInspection */
     public function testRecursivePropertyAccess()
     {
         $config = new Configuration([
@@ -466,6 +454,7 @@ JSON
         $this->assertEquals('Im Closure', $config->object->a->callable);
     }
 
+    /** @noinspection PhpUndefinedFieldInspection */
     public function testSetAttributeToNestedAttribute()
     {
         $config = new Configuration([
@@ -489,11 +478,12 @@ JSON
         $this->assertEquals('BAR', $config->users->bar->name);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
+    /** @noinspection PhpUndefinedFieldInspection
+     * @noinspection PhpObjectFieldsAreOnlyWrittenInspection
      */
     public function testRaiseExceptionWhenSetAttributeToNestedAttributeNotDefined()
     {
+        $this->expectException(\InvalidArgumentException::class);
         $config = new Configuration([
             'users' => [
                 'foo' => [

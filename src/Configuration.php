@@ -22,20 +22,20 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * @var int 属性値がcallableの場合に実行結果を返すかどうか
      */
-    private $executeCallable;
+    private int $executeCallable;
 
     /**
      * @var array 属性の配列
      */
-    private $attributes;
+    private array $attributes;
 
     /**
      * コンストラクタ
      *
-     * @param array $attributes 属性の配列
+     * @param iterable $attributes 属性の配列
      * @param int $executeCallable 属性値がcallableの場合に実行結果を返すかどうか
      */
-    public function __construct($attributes = [], $executeCallable = self::NOT_EXECUTE_CALLABLE)
+    public function __construct(iterable $attributes = [], int $executeCallable = self::NOT_EXECUTE_CALLABLE)
     {
         $this->executeCallable = $executeCallable;
         $this->initialize($attributes);
@@ -47,19 +47,12 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      * 要素が配列またはTraversable実装オブジェクトの場合、
      * ラッピングすることで配列アクセスとプロパティアクセスを提供します。
      *
-     * @param array $attributes 属性の配列
-     * @return $this
+     * @param iterable $attributes 属性の配列
+     * @return static
      * @throws \InvalidArgumentException
      */
-    public function initialize($attributes = [])
+    public function initialize(iterable $attributes = []): static
     {
-        if (!is_array($attributes) && !($attributes instanceof \Traversable)) {
-            throw new \InvalidArgumentException(
-                sprintf('The attributes is not Array and not Traversable. type:"%s"',
-                    (is_object($attributes)) ? get_class($attributes) : gettype($attributes)
-                )
-            );
-        }
         $this->attributes = [];
         foreach ($attributes as $name => $value) {
             $this->define($name, $value);
@@ -72,10 +65,10 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @param string $json JSON文字列
      * @param int $executeCallable 属性値がcallableの場合に実行結果を返すかどうか
-     * @return $this
+     * @return static
      * @throws \InvalidArgumentException
      */
-    public static function createFromJson($json, $executeCallable = self::NOT_EXECUTE_CALLABLE)
+    public static function createFromJson(string $json, int $executeCallable = self::NOT_EXECUTE_CALLABLE): static
     {
         $attributes = json_decode($json, true);
         if ($attributes === null) {
@@ -112,11 +105,11 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      * 属性名および初期値をセットします。
      *
      * @param string $name 属性名
-     * @param mixed $value 初期値
+     * @param mixed|null $value 初期値
      * @return $this
      * @throws \InvalidArgumentException
      */
-    public function define($name, $value = null)
+    public function define(string $name, mixed $value = null): static
     {
         if (array_key_exists($name, $this->attributes)) {
             throw new \InvalidArgumentException(
@@ -140,10 +133,10 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * __isset
      *
-     * @param mixed
+     * @param string $name
      * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name)
     {
         return (array_key_exists($name, $this->attributes) && $this->attributes[$name] !== null);
     }
@@ -151,11 +144,11 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * __get
      *
-     * @param mixed
+     * @param string $name
      * @return mixed
      * @throws \InvalidArgumentException
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         if (!array_key_exists($name, $this->attributes)) {
             throw new \InvalidArgumentException(
@@ -172,11 +165,11 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * __set
      *
-     * @param mixed
-     * @param mixed
+     * @param string $name
+     * @param mixed $value
      * @throws \InvalidArgumentException
      */
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value)
     {
         if (!array_key_exists($name, $this->attributes)) {
             throw new \InvalidArgumentException(
@@ -199,9 +192,9 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * __unset
      *
-     * @param mixed
+     * @param string $name
      */
-    public function __unset($name)
+    public function __unset(string $name)
     {
         if (array_key_exists($name, $this->attributes)) {
             $this->attributes[$name] = null;
@@ -211,44 +204,44 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
     /**
      * ArrayAccess::offsetExists()
      *
-     * @param mixed
+     * @param mixed $offset
      * @return bool
      */
-    public function offsetExists($name)
+    public function offsetExists(mixed $offset): bool
     {
-        return $this->__isset($name);
+        return $this->__isset($offset);
     }
 
     /**
      * ArrayAccess::offsetGet()
      *
-     * @param mixed
+     * @param mixed $offset
      * @return mixed
      */
-    public function offsetGet($name)
+    public function offsetGet(mixed $offset): mixed
     {
-        return $this->__get($name);
+        return $this->__get($offset);
     }
 
     /**
      * ArrayAccess::offsetSet()
      *
-     * @param mixed
-     * @param mixed
+     * @param mixed $offset
+     * @param mixed $value
      */
-    public function offsetSet($name, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        $this->__set($name, $value);
+        $this->__set($offset, $value);
     }
 
     /**
      * ArrayAccess::offsetUnset()
      *
-     * @param mixed
+     * @param mixed $offset
      */
-    public function offsetUnset($name)
+    public function offsetUnset(mixed $offset): void
     {
-        $this->__unset($name);
+        $this->__unset($offset);
     }
 
     /**
@@ -258,7 +251,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      * @param array $args
      * @return mixed
      */
-    public function __call($name, $args)
+    public function __call(string $name, array $args)
     {
         if (array_key_exists($name, $this->attributes) && $this->attributes[$name] instanceof \Closure) {
             return call_user_func_array($this->attributes[$name], $args);
@@ -281,7 +274,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @return \ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->attributes);
     }
@@ -291,7 +284,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->attributes);
     }
@@ -301,7 +294,7 @@ class Configuration implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         $values = [];
         foreach ($this->attributes as $name => $value) {
